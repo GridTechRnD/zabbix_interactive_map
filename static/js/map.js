@@ -200,13 +200,11 @@ async function fetchData() {
     try {
         const id = getIdFromUrl();
         const url = id ? `/data?id=${encodeURIComponent(id)}` : '/data';
-        console.log(url);
         const response = await fetch(url, { method: 'GET', mode: 'cors' });
         if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
         const data = await response.json();
         if (Array.isArray(data)) {
             cachedData = data;
-            console.log(cachedData)
             loadData();
         }
     } catch (error) {
