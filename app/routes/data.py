@@ -1,16 +1,28 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from zabbix_api import ZabbixAPI
 from app.modules.zabbix_session import zabbix_session
-from app.modules.cities import CITIES
+from app.modules.get_sysmapid import get_sysmapid
 
 router = APIRouter()
 
 
 @router.get("/data")
-async def data(zapi: ZabbixAPI = Depends(zabbix_session)):
-    groupids = [groupid for groups in CITIES.values() for groupid in groups]
+async def data(id: str = Query(None), zapi: ZabbixAPI = Depends(zabbix_session)):
+    sysmapids = get_sysmapid(id)
+    hostids = zapi.map.get({
+        "sysmapids": [sysmapid for sysmapid in sysmapids],
+        "output": ["sysmapid"],
+        "selectSelements": ["elements"]
+    })
+    hostids = [
+        element["hostid"]
+        for sysmap in hostids
+        for selement in sysmap.get("selements", [])
+        for element in selement.get("elements", [])
+        if "hostid" in element
+    ]
     if res := zapi.host.get({
-        "groupids": groupids,
+        "hostids": hostids,
         "output": ["extend", "host", "name"],
         "selectInventory": [
             "type",
@@ -24,7 +36,6 @@ async def data(zapi: ZabbixAPI = Depends(zabbix_session)):
         "filter": {"status": "0", "inventory.type": "AP"},
     }):
 
-        hostids = [host["hostid"] for host in res]
         items = zapi.item.get({
             "hostids": hostids,
             "search": {"key_": "availability.status"},
