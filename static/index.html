@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="/static/css/global.css" />
+    <link rel="stylesheet" href="/static/css/marker.css" />
+    <link rel="stylesheet" href="/static/css/menu.css" />
+    <link rel="stylesheet" href="/static/css/search.css" />
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="custom-pop" class="hidden"></div>
+    <div id="top-bar">
+        <div id="search-bar">
+            <input type="text" id="search-input" placeholder="Search location..." />
+            <button id="search-button"></button>
+            <div id="suggestions"></div>
+        </div>
+        <div id="menu">
+            <div class="menu-option">
+                <span class="menu-text">Status</span>
+                <select id="status-filter" aria-label="Status">
+                    <option value="">-</option>
+                    <option value="Down">Down</option>
+                    <option value="Up">Up</option>
+                </select>
+            </div>
+            <div class="menu-option map">
+                <span class="menu-text">Map Style</span>
+                <select id="map-theme-filter" aria-label="Map Theme">
+                    <option value="">-</option>
+                    <option value="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png">Carto Light</option>
+                    <option value="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png">Carto Dark</option>
+                    <option value="https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png">Toner</option>
+                    <option value="https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png">Terrain</option>
+                    <option value="https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg">Watercolor</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/map.js"></script>
+    <script src="/static/js/search.js"></script>
+    <script src="/static/js/menu.js"></script>
+</body>
+
+</html>
