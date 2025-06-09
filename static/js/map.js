@@ -31,10 +31,11 @@ function initMap() {
 
 
 function createClusterIcon(cluster) {
-    const hasDown = cluster.getAllChildMarkers().some(marker =>
-        marker.options.icon.options.iconUrl.includes('icon_down.png')
-    );
-
+    var hasDown = null;
+    cluster.getAllChildMarkers().forEach(marker => {
+        if (marker.options.icon && marker.options.icon.options.iconUrl && marker.options.icon.options.iconUrl.includes('icon_down.png')) {
+            hasDown = true;
+        }});
     let sizeClass = 'large';
     const count = cluster.getChildCount();
     if (hasDown) sizeClass = 'down';
@@ -88,14 +89,15 @@ function createPopup(item, latLng) {
     const popContent = `
     <div class="popup-content">
       <b>Details</b><br>
+      Name: <b>${item.name || 'N/A'}</b><br>
+      Host: <b>${item.host || 'N/A'}</b><br>
+      IP: <b>${item.interfaces[0].ip || 'N/A'}</b><br>
+      Serial Number: <b>${item.inventory.serialno_a || 'N/A'}</b><br>
       Type: <b>${item.inventory.type || 'N/A'}</b><br>
       Type (Full Details): <b>${item.inventory.type_full || 'N/A'}</b><br>
-      Alias: <b>${item.name || 'N/A'}</b><br>
-      Name: <b>${item.host || 'N/A'}</b><br>
       Location: <b>${item.inventory.location || 'N/A'}</b><br>
       Latitude: <b>${latLng[0]}</b><br>
       Longitude: <b>${latLng[1]}</b><br>
-      Serial Number: <b>${item.inventory.serialno_a || 'N/A'}</b><br>
       <div id="scripts-container-${item.hostid}">Loading scripts...</div>
     </div>
   `;
@@ -174,6 +176,16 @@ function loadData() {
     const statusFilter = document.getElementById('status-filter')?.value || '';
 
     cachedData.forEach(item => {
+        if (
+            !item.inventory ||
+            !item.inventory.location_lat ||
+            !item.inventory.location_lon ||
+            isNaN(parseFloat(item.inventory.location_lat)) ||
+            isNaN(parseFloat(item.inventory.location_lon))
+        ) {
+            return;
+        }
+
         if (statusFilter && ((statusFilter === 'Up' && item.available === '0') || (statusFilter === 'Down' && item.available === '1'))) return;
 
         const marker = createMarker(item);
@@ -186,16 +198,25 @@ function loadData() {
 
 async function fetchData() {
     try {
-        const response = await fetch('/data', { method: 'GET', mode: 'cors' });
+        const id = getIdFromUrl();
+        const url = id ? `/data?id=${encodeURIComponent(id)}` : '/data';
+        console.log(url);
+        const response = await fetch(url, { method: 'GET', mode: 'cors' });
         if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
         const data = await response.json();
         if (Array.isArray(data)) {
             cachedData = data;
+            console.log(cachedData)
             loadData();
         }
     } catch (error) {
         console.error('Error fetching data:', error);
     }
+}
+
+function getIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
 }
 
 function setupEventListeners() {
