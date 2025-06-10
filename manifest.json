@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2.0,
+    "id": "gridtechgeomap",
+    "name": "Gridtech GeoMap",
+    "version": "1.0",
+    "type": "module",
+    "namespace": "GridtechGeoMap",
+    "author": "Gustavo Zeloni",
+    "description": "Displays an interactive geographic map highlighting hosts and clusters for better visualization and management.",
+    "actions": {
+        "gridtechgeomap.view": {
+            "class": "GridtechGeoMapAction",
+            "view": "gridtechgeomap.view"
+        }
+    }
+}

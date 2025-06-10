@@ -1,0 +1,57 @@
+#search-button::before {
+    content: '\1F50D';
+    font-size: 20px;
+    margin-right: 0px;
+}
+
+#search-bar {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    padding: 6px;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 0;
+}
+
+#search-button {
+    margin-left: 4px;
+    padding: 10px 16px;
+    font-size: 16px;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #ffffff;
+    border: 0px;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    display: none;
+    padding: 6px;
+}
+
+#suggestions::-webkit-scrollbar {
+    display: none;
+}
+
+#suggestions div {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#suggestions div:hover {
+    background-color: #f0f0f0;
+}
