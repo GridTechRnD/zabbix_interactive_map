@@ -4,17 +4,18 @@
  * @var CView $this
  */
 
-$widget = (new CHtmlPage())->setTitle(_('Geomap'))->setNavigation(
+$widget = (new CHtmlPage())->setTitle(_('Geomaps'))
+->setNavigation(
     (new CList())->addItem(
         (new CBreadcrumbs([
             (new CSpan())->addItem(
                 new CLink(
                     _('All'),
-                    (new CUrl('zabbix.php'))->setArgument('action', 'availabilityreport.list')
+                    (new CUrl('zabbix.php'))->setArgument('action', 'gridtechgeomaplist.view')
                 )
             ),
             (new CSpan())->addItem(new CLink(
-                    _('Teste'),
+                    _($data['sysmap_name']),
                     (new CUrl('zabbix.php'))->setArgument('action', 'gridtechgeomap.view')
                 ))
         ]))->addClass('wide')
@@ -62,11 +63,7 @@ $widget->setControls(
                             'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png' => _('Terrain')
                         ])
                     )
-            ),
-        (new CButton('edit', _('Edit')))
-            ->setAttribute('title', _('Edit view'))
-            ->setId('edit-view-btn')
-            ->setAttribute('onclick', "location.href='edit_geomap.php';")
+            )
     ])
 );
 

@@ -8,9 +8,16 @@
     "author": "Gustavo Zeloni",
     "description": "Displays an interactive geographic map highlighting hosts and clusters for better visualization and management.",
     "actions": {
+        "gridtechgeomaplist.view": {
+            "class": "GridtechGeoMapList",
+            "view": "gridtechgeomaplist.view"
+        },
         "gridtechgeomap.view": {
-            "class": "GridtechGeoMapAction",
+            "class": "GridtechGeoMapHosts",
             "view": "gridtechgeomap.view"
+        },
+        "executescript.action": {
+            "class": "ExecuteScript"
         }
     }
 }

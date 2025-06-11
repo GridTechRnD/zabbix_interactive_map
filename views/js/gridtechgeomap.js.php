@@ -23,14 +23,14 @@
 
 
     const ICONS = {
-        UP: L.icon({ iconUrl: 'http://localhost:8081/static/images/icon_up.png', iconSize: [38, 38] }),
-        DOWN: L.icon({ iconUrl: 'http://localhost:8081/static/images/icon_down.png', iconSize: [38, 38] })
+        UP: L.icon({ iconUrl: 'modules/zabbix-module-geomap/views/images/icon_up.png', iconSize: [38, 38] }),
+        DOWN: L.icon({ iconUrl: 'modules/zabbix-module-geomap/views/images/icon_down.png', iconSize: [38, 38] })
     };
 
     const DEFAULT_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     const MAP_OPTIONS = { zoomControl: false };
     const DEFAULT_VIEW = [0, 0];
-    const DEFAULT_ZOOM = 1;
+    const DEFAULT_ZOOM = 13;
 
 
     let map, currentTileLayer, markersCluster;
@@ -80,7 +80,7 @@
     <div class="marker-box">
       <div class="marker-item alias"><b>${item.host || 'N/A'}</b></div>
       <div class="marker-item image">
-        <img src="${item.available === "0" ? 'http://localhost:8081/static/images/icon_down.png' : 'http://localhost:8081/static/images/icon_up.png'}" style="width: 38px; height: 38px;">
+        <img src="${item.available === "0" ? 'modules/zabbix-module-geomap/views/images/icon_down.png' : 'modules/zabbix-module-geomap/views/images/icon_up.png'}" style="width: 38px; height: 38px;">
       </div>
       <div class="marker-item grouped">
         <div><b>${item.name || 'N/A'}</b></div>
@@ -112,19 +112,56 @@
 
     function createPopup(item, latLng) {
         const popContent = `
-    <div class="popup-content">
-      <b>Details</b><br>
-      Name: <b>${item.name || 'N/A'}</b><br>
-      Host: <b>${item.host || 'N/A'}</b><br>
-      IP: <b>${item.interfaces[0].ip || 'N/A'}</b><br>
-      Serial Number: <b>${item.inventory.serialno_a || 'N/A'}</b><br>
-      Type: <b>${item.inventory.type || 'N/A'}</b><br>
-      Type (Full Details): <b>${item.inventory.type_full || 'N/A'}</b><br>
-      Location: <b>${item.inventory.location || 'N/A'}</b><br>
-      Latitude: <b>${latLng[0]}</b><br>
-      Longitude: <b>${latLng[1]}</b><br>
-      <div id="scripts-container-${item.hostid}">Loading scripts...</div>
-    </div>
+    <ul class="popup-content" tabindex="0">
+            <li>
+                <h3>View</h3>
+            </li>
+            <li><a tabindex="-1" aria-label="View, Dashboards" class="popup-content-item"
+                href="zabbix.php?action=host.dashboard.view&amp;hostid=${item.hostid}">Dashboards</a></li>
+            <li><a tabindex="-1" aria-label="View, Problems" class="popup-content-item"
+                    href="zabbix.php?action=problem.view&amp;hostids%5B%5D=${item.hostid}&amp;filter_set=1">Problems</a></li>
+            <li><a tabindex="-1" aria-label="View, Latest data" class="popup-content-item"
+                    href="zabbix.php?action=latest.view&amp;hostids%5B%5D=${item.hostid}&amp;filter_set=1">Latest data</a></li>
+            <li><a tabindex="-1" aria-label="View, Graphs" class="popup-content-item"
+                    href="zabbix.php?action=charts.view&amp;filter_hostids%5B%5D=${item.hostid}&amp;filter_set=1">Graphs</a></li>
+            <li><a tabindex="-1" aria-label="View, Inventory" class="popup-content-item"
+                    href="hostinventories.php?hostid=${item.hostid}">Inventory</a></li>
+            <li>
+                <div></div>
+            </li>
+            <li>
+                <h3>Configuration</h3>
+            </li>
+            <li><a tabindex="-1" aria-label="Configuration, Host" class="popup-content-item"
+                href="zabbix.php?action=host.edit&amp;hostid=${item.hostid}">Host</a></li>
+            <li><a tabindex="-1" aria-label="Configuration, Items" class="popup-content-item"
+                    href="zabbix.php?action=item.list&amp;filter_set=1&amp;filter_hostids%5B%5D=${item.hostid}&amp;context=host">Items</a>
+            </li>
+            <li><a tabindex="-1" aria-label="Configuration, Triggers" class="popup-content-item"
+                    href="zabbix.php?action=trigger.list&amp;filter_set=1&amp;filter_hostids%5B%5D=${item.hostid}&amp;context=host">Triggers</a>
+            </li>
+            <li><a tabindex="-1" aria-label="Configuration, Graphs" class="popup-content-item"
+                    href="graphs.php?filter_set=1&amp;filter_hostids%5B%5D=${item.hostid}&amp;context=host">Graphs</a></li>
+            <li>
+                <div></div>
+            </li>
+            <li>
+                <h3>Scripts</h3>
+            </li>
+            <!-- marcador para scripts -->
+            <li id="scripts-placeholder-${item.hostid}"></li>
+            <li>
+                <div></div>
+            </li>
+            <li>
+                <h3>Links</h3>
+            </li>
+            <!-- marcador para links -->
+            <li id="links-placeholder-${item.hostid}"></li>
+            <li>
+                <div></div>
+            </li>
+        </ul>
   `;
 
         const popup = L.popup({ closeButton: true }).setContent(popContent);
@@ -133,74 +170,92 @@
     }
 
 
-    async function loadDynamicContent(hostid) {
-        const scriptsContainer = document.getElementById(`scripts-container-${hostid}`);
-        if (!scriptsContainer) return;
-
-        try {
-            const [links, scripts] = await Promise.all([
-                fetch('http://localhost:8081/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json()),
-                fetch('http://localhost:8081/scripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json())
-            ]);
-
-            const linksContainer = document.createElement('div');
-            linksContainer.innerHTML = '<br><h4>Links:</h4><br>';
-            if (Array.isArray(links) && links.length) {
-                links.forEach(link => {
-                    const button = document.createElement('button');
-                    button.className = 'custom-button';
-                    button.textContent = link.name;
-                    button.onclick = async (e) => {
-                        button.disabled = true;
-                        const original = button.innerHTML;
-                        button.innerHTML = `<span class="spinner"></span> Abrindo...`;
-                        setTimeout(() => {
-                            window.open(link.url, '_blank');
-                            button.innerHTML = original;
-                            button.disabled = false;
-                        }, 500);
-                    };
-                    linksContainer.appendChild(button);
-                });
-            } else {
-                linksContainer.textContent = 'No links available.';
+    function loadDynamicContent(hostid) {
+        // Scripts
+        const scriptsPlaceholder = document.getElementById(`scripts-placeholder-${hostid}`);
+        if (scriptsPlaceholder) {
+            // Remove possíveis <li> já inseridos após o placeholder
+            let next = scriptsPlaceholder.nextSibling;
+            while (next && next.tagName === 'LI' && !next.querySelector('h3')) {
+                const toRemove = next;
+                next = next.nextSibling;
+                toRemove.remove();
             }
-            scriptsContainer.before(linksContainer);
 
-            scriptsContainer.innerHTML = '<br><h4>Scripts:</h4><br>';
-            if (Array.isArray(scripts) && scripts.length) {
-                scripts.forEach(script => {
-                    const button = document.createElement('button');
-                    button.className = 'custom-button';
-                    button.textContent = script.name;
-                    button.onclick = async () => {
-                        button.disabled = true;
-                        const original = button.innerHTML;
-                        button.innerHTML = `<span class="spinner"></span> Executando...`;
+            const item = cachedData.find(h => h.hostid == hostid);
+            if (item && Array.isArray(item.scripts) && item.scripts.length) {
+                item.scripts.forEach(script => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'popup-content-item';
+                    a.tabIndex = -1;
+                    a.textContent = script.name;
+                    // a.href = '#';
+                    a.onclick = async (e) => {
+                        e.preventDefault();
+                        a.textContent = 'Executando...';
+                        a.classList.add('disabled');
                         await executeScript(script.scriptid, hostid, script.name);
-                        button.innerHTML = original;
-                        button.disabled = false;
+                        a.textContent = script.name;
+                        a.classList.remove('disabled');
                     };
-                    scriptsContainer.appendChild(button);
+                    li.appendChild(a);
+                    scriptsPlaceholder.parentNode.insertBefore(li, scriptsPlaceholder.nextSibling);
                 });
             } else {
-                scriptsContainer.textContent = 'No scripts available.';
+                const li = document.createElement('li');
+                li.innerHTML = '<span style="color:#888">No scripts available.</span>';
+                scriptsPlaceholder.parentNode.insertBefore(li, scriptsPlaceholder.nextSibling);
             }
-        } catch (error) {
-            console.error('Error loading dynamic content:', error);
-            scriptsContainer.textContent = 'Failed to load content.';
+        }
+
+        // Links
+        const linksPlaceholder = document.getElementById(`links-placeholder-${hostid}`);
+        if (linksPlaceholder) {
+            let next = linksPlaceholder.nextSibling;
+            while (next && next.tagName === 'LI' && !next.querySelector('h3')) {
+                const toRemove = next;
+                next = next.nextSibling;
+                toRemove.remove();
+            }
+
+            const item = cachedData.find(h => h.hostid == hostid);
+            if (item && Array.isArray(item.links) && item.links.length) {
+                item.links.forEach(link => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'popup-content-item';
+                    a.tabIndex = -1;
+                    a.textContent = link.name;
+                    a.href = link.url;
+                    a.target = '_blank';
+                    li.appendChild(a);
+                    linksPlaceholder.parentNode.insertBefore(li, linksPlaceholder.nextSibling);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerHTML = '<span style="color:#888">No links available.</span>';
+                linksPlaceholder.parentNode.insertBefore(li, linksPlaceholder.nextSibling);
+            }
         }
     }
 
 
     async function executeScript(scriptid, hostid, scriptName) {
         try {
-            const response = await fetch('http://localhost:8081/execute', {
+            const formData = new URLSearchParams();
+            formData.append('scriptid', scriptid);
+            formData.append('hostid', hostid);
+
+            const response = await fetch('/zabbix.php?action=executescript.action', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ scriptid, hostid })
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString(),
+                credentials: 'include'
             });
+
             const result = await response.json();
+            console.log(result);
             showPop(`Script "${scriptName}" executed successfully. Result: ${result.value}`, 10000, true);
         } catch (error) {
             console.error('Error executing script:', error);
@@ -257,19 +312,17 @@
         }
     }
 
-    async function fetchData() {
+    function fetchData() {
         try {
-            const id = getIdFromUrl();
-            const url = id ? `http://localhost:8081/data?id=${encodeURIComponent(id)}` : 'http://localhost:8081/data?id=28742';
-            const response = await fetch(url, { method: 'GET', mode: 'cors' });
-            if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-            const data = await response.json();
-            if (Array.isArray(data)) {
-                cachedData = data;
-                loadData();
-            }
+            <?php if (isset($data['hosts'])): ?>
+                const data = <?= json_encode($data['hosts']) ?>;
+                if (Array.isArray(data)) {
+                    cachedData = data;
+                    loadData();
+                }
+            <?php else: ?>
+            <?php endif; ?>
         } catch (error) {
-            console.error('Error fetching data:', error);
         }
     }
 
