@@ -23,11 +23,11 @@ body {
 
 #map {
     width: 100% !important;
-    height: calc(100vh - 68px) !important;
+    height: calc(100vh - 112px) !important;
     min-height: 300px;
     margin: 0;
     padding: 0;
-    border: 1px solid #AAA;
+    border: 1px solid #4f4f4f;
 }
 
 @media (max-width: 700px) {
@@ -50,38 +50,74 @@ body {
 }
 
 .custom-button {
-    background-color: #353535;
-    border: none;
-    color: white;
-    padding: 2px 2px;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
+    box-sizing: border-box;
+    color: #f2f2f2;
+    padding: 4px 10px;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
+    vertical-align: middle;
+    align-items: start;
     font-size: 12px;
-    border-radius: 4px;
-    margin: 2px;
+    display: inline-block;
+    width: auto;
+    height: auto;
+    word-break: break-word;
+    white-space: normal;
+    margin: 4px 0px;
+    margin-right: 4px;
 }
 
+.custom-button:hover {
+    background-color: #454545;
+    color: #f2f2f2;
+    box-sizing: border-box;
+    color: #f2f2f2;
+    outline: 0;
+    transition: box-shadow 0.2s ease-out;
+
+}
 #map {
     height: 100vh;
     width: 100vw;
 }
 
 .leaflet-control-zoom {
-    border-radius: 4px !important;
+    border-radius: 0px !important;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-    background-color: white !important;
-    border: 1px solid #ffffff !important;
+    background-color: #383838 !important;
+    border: 1px solid #4f4f4f !important;
 }
 
 .leaflet-control-zoom a {
-    color: black;
+    background-color: #383838 !important;
+    color: #f2f2f2;
     text-decoration: none;
 }
 
 .leaflet-control-zoom a:hover {
-    background-color: #ffffff;
+    background-color: #454545;
 }
+
+
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 1px;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
+    color: #f2f2f2;
+    text-align: left;
+	}
+
+
+.leaflet-popup-tip {
+	background-color: #383838;
+    border-left: 1px solid #4f4f4f;
+    border-right: 1px solid #4f4f4f;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
 
 .popup-content {
     max-height: 300px;
@@ -109,9 +145,8 @@ body {
 .custom-marker .marker-item.alias {
     display: inline-block;
     padding: 2px 8px;
-    background: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
     white-space: nowrap;
     text-align: center;
     font-size: 12px;
@@ -121,12 +156,10 @@ body {
 .custom-marker .marker-item {
     display: inline-block;
     padding: 2px 8px;
-    background: #ffffff8f;
-
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
     white-space: nowrap;
-    text-align: center;
+    text-align: left;
     font-size: 12px;
     line-height: 1.2;
 }
@@ -162,17 +195,15 @@ header>div {
     top: 90px;
     left: 50%;
     transform: translateX(-50%);
-    background: #fff;
-    color: #333;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
     padding: 18px 32px;
-    border-radius: 4px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     z-index: 2000;
     font-size: 16px;
     display: none;
     min-width: 220px;
     text-align: center;
-    border: 1px solid #eee;
     transition: opacity 0.3s;
 }
 
@@ -184,22 +215,6 @@ header>div {
 #custom-pop.hidden {
     display: none;
     opacity: 0;
-}
-
-#top-bar {
-    position: absolute;
-    top: 20px;
-    left: 16px;
-    display: flex;
-    align-items: center;
-    z-index: 1000;
-    gap: 16px;
-    transition: left 0.3s;
-}
-
-.custom-button,
-#search-button {
-    padding: 10px 16px;
 }
 
 footer,
