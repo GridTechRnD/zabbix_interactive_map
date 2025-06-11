@@ -21,34 +21,26 @@
     $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/css/global.css"/>');
 
 
+
     const ICONS = {
-        UP: L.icon({
-            iconUrl: 'http://localhost:8081/static/images/icon_up.png',
-            iconSize: [38, 38]
-        }),
-        DOWN: L.icon({
-            iconUrl: 'http://localhost:8081/static/images/icon_down.png',
-            iconSize: [38, 38]
-        })
+        UP: L.icon({ iconUrl: 'http://localhost:8081/static/images/icon_up.png', iconSize: [38, 38] }),
+        DOWN: L.icon({ iconUrl: 'http://localhost:8081/static/images/icon_down.png', iconSize: [38, 38] })
     };
 
     const DEFAULT_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-    const MAP_OPTIONS = {
-        zoomControl: false
-    };
+    const MAP_OPTIONS = { zoomControl: false };
     const DEFAULT_VIEW = [0, 0];
     const DEFAULT_ZOOM = 1;
 
 
     let map, currentTileLayer, markersCluster;
+    let mapCentered = false;
     let cachedData = [];
 
 
     function initMap() {
         map = L.map('map', MAP_OPTIONS).setView(DEFAULT_VIEW, DEFAULT_ZOOM);
-        L.control.zoom({
-            position: 'bottomright'
-        }).addTo(map);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         currentTileLayer = L.tileLayer(DEFAULT_TILE_URL, {
             maxZoom: 19,
@@ -65,8 +57,7 @@
     function createClusterIcon(cluster) {
         var hasDown = null;
         cluster.getAllChildMarkers().forEach(marker => {
-            if (marker.options.icon && marker.options.icon.options.iconUrl && marker.options.icon.options.iconUrl
-                .includes('icon_down.png')) {
+            if (marker.options.icon && marker.options.icon.options.iconUrl && marker.options.icon.options.iconUrl.includes('icon_down.png')) {
                 hasDown = true;
             }
         });
@@ -113,9 +104,7 @@
             iconSize: [38, 58]
         });
 
-        const marker = L.marker([lat, lon], {
-            icon: customIcon
-        });
+        const marker = L.marker([lat, lon], { icon: customIcon });
         marker.bindPopup(createPopup(item, [lat, lon]));
         return marker;
     }
@@ -138,9 +127,7 @@
     </div>
   `;
 
-        const popup = L.popup({
-            closeButton: true
-        }).setContent(popContent);
+        const popup = L.popup({ closeButton: true }).setContent(popContent);
         popup.on('add', () => loadDynamicContent(item.hostid));
         return popup;
     }
@@ -152,35 +139,27 @@
 
         try {
             const [links, scripts] = await Promise.all([
-                fetch('http://localhost:8081/links', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        hostid
-                    })
-                }).then(res => res.json()),
-                fetch('http://localhost:8081/scripts', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        hostid
-                    })
-                }).then(res => res.json())
+                fetch('http://localhost:8081/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json()),
+                fetch('http://localhost:8081/scripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json())
             ]);
 
-
             const linksContainer = document.createElement('div');
-            linksContainer.innerHTML = '<h4>Links:</h4>';
+            linksContainer.innerHTML = '<br><h4>Links:</h4><br>';
             if (Array.isArray(links) && links.length) {
                 links.forEach(link => {
                     const button = document.createElement('button');
                     button.className = 'custom-button';
                     button.textContent = link.name;
-                    button.onclick = () => window.open(link.url, '_blank');
+                    button.onclick = async (e) => {
+                        button.disabled = true;
+                        const original = button.innerHTML;
+                        button.innerHTML = `<span class="spinner"></span> Abrindo...`;
+                        setTimeout(() => {
+                            window.open(link.url, '_blank');
+                            button.innerHTML = original;
+                            button.disabled = false;
+                        }, 500);
+                    };
                     linksContainer.appendChild(button);
                 });
             } else {
@@ -188,14 +167,20 @@
             }
             scriptsContainer.before(linksContainer);
 
-
-            scriptsContainer.innerHTML = '<h4>Scripts:</h4>';
+            scriptsContainer.innerHTML = '<br><h4>Scripts:</h4><br>';
             if (Array.isArray(scripts) && scripts.length) {
                 scripts.forEach(script => {
                     const button = document.createElement('button');
                     button.className = 'custom-button';
                     button.textContent = script.name;
-                    button.onclick = () => executeScript(script.scriptid, hostid, script.name);
+                    button.onclick = async () => {
+                        button.disabled = true;
+                        const original = button.innerHTML;
+                        button.innerHTML = `<span class="spinner"></span> Executando...`;
+                        await executeScript(script.scriptid, hostid, script.name);
+                        button.innerHTML = original;
+                        button.disabled = false;
+                    };
                     scriptsContainer.appendChild(button);
                 });
             } else {
@@ -212,19 +197,14 @@
         try {
             const response = await fetch('http://localhost:8081/execute', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    scriptid,
-                    hostid
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ scriptid, hostid })
             });
             const result = await response.json();
-            showPop(`Script "${scriptName}" executed successfully. Result: ${result.value}`, 10000);
+            showPop(`Script "${scriptName}" executed successfully. Result: ${result.value}`, 10000, true);
         } catch (error) {
             console.error('Error executing script:', error);
-            showPop(`Failed to execute script "${scriptName}".`, 5000);
+            showPop(`Failed to execute script "${scriptName}".`, 5000, true);
         }
     }
 
@@ -233,7 +213,10 @@
         markersCluster.clearLayers();
         const bounds = L.latLngBounds();
         const statusFilter = document.getElementById('status-filter')?.value || '';
+        const id = getIdFromUrl();
+        let focusLatLng = null;
 
+        const uniqueCoords = new Set();
         cachedData.forEach(item => {
             if (
                 !item.inventory ||
@@ -245,26 +228,40 @@
                 return;
             }
 
-            if (statusFilter && ((statusFilter === 'Up' && item.available === '0') || (statusFilter === 'Down' &&
-                item.available === '1'))) return;
+            if (statusFilter && ((statusFilter === 'Up' && item.available === '0') || (statusFilter === 'Down' && item.available === '1'))) return;
+
+            const lat = parseFloat(item.inventory.location_lat);
+            const lon = parseFloat(item.inventory.location_lon);
+            const coordKey = `${lat},${lon}`;
+
+            if (uniqueCoords.has(coordKey)) return;
+            uniqueCoords.add(coordKey);
 
             const marker = createMarker(item);
             markersCluster.addLayer(marker);
-            bounds.extend([parseFloat(item.inventory.location_lat), parseFloat(item.inventory.location_lon)]);
+            const latLng = [lat, lon];
+            bounds.extend(latLng);
+
+            if (id && item.hostid === id) {
+                focusLatLng = latLng;
+            }
         });
 
-        if (bounds.isValid()) map.fitBounds(bounds);
+        if (!mapCentered) {
+            if (focusLatLng) {
+                map.setView(focusLatLng, 16);
+            } else if (bounds.isValid()) {
+                map.fitBounds(bounds);
+            }
+            mapCentered = true;
+        }
     }
 
     async function fetchData() {
         try {
             const id = getIdFromUrl();
-            const url = id ? `http://localhost:8081/data?id=${encodeURIComponent(id)}` :
-                'http://localhost:8081/data?id=28742';
-            const response = await fetch(url, {
-                method: 'GET',
-                mode: 'cors'
-            });
+            const url = id ? `http://localhost:8081/data?id=${encodeURIComponent(id)}` : 'http://localhost:8081/data?id=28742';
+            const response = await fetch(url, { method: 'GET', mode: 'cors' });
             if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
             const data = await response.json();
             if (Array.isArray(data)) {
@@ -286,7 +283,7 @@
         const mapThemeFilter = document.getElementById('map-theme-filter');
         const savedThemeUrl = localStorage.getItem('mapTheme');
 
-        if (statusFilter) statusFilter.addEventListener('change', loadData);
+        if (statusFilter || statusFilter.value === "") statusFilter.addEventListener('change', loadData);
 
         if (mapThemeFilter) {
             if (savedThemeUrl) {
@@ -322,10 +319,10 @@
 
     function updateSuggestions(query) {
         suggestionsDiv.innerHTML = '';
-            if (query.length < 1) {
-                hideSuggestions();
-                return;
-            }
+        if (query.length < 1) {
+            hideSuggestions();
+            return;
+        }
         const matches = getMatchingItems(query);
 
         if (matches.length > 0) {
@@ -400,16 +397,35 @@
         suggestionsDiv.style.display = 'none';
     }
 
-    function showPop(message, timeout = 3000) {
+    function showPop(message, timeout = 3000, hasCloseButton = false) {
         const popup = document.getElementById('custom-pop');
         if (popup) {
             popup.textContent = message;
             popup.classList.remove('hidden');
             popup.classList.add('show');
-            setTimeout(() => {
-                popup.classList.remove('show');
-                popup.classList.add('hidden');
-            }, timeout);
+
+            if (hasCloseButton) {
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'x';
+                closeButton.style.position = 'absolute';
+                closeButton.style.top = '2px';
+                closeButton.style.right = '2px';
+                closeButton.style.background = 'transparent';
+                closeButton.style.border = 'none';
+                closeButton.style.fontSize = '18px';
+                closeButton.style.color = '#757575';
+                closeButton.style.cursor = 'pointer';
+                closeButton.addEventListener('click', () => {
+                    popup.classList.remove('show');
+                    popup.classList.add('hidden');
+                });
+                popup.appendChild(closeButton);
+            } else {
+                setTimeout(() => {
+                    popup.classList.remove('show');
+                    popup.classList.add('hidden');
+                }, timeout);
+            }
         }
     }
 
