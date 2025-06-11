@@ -29,29 +29,29 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: #ffffff;
-    border: 0px;
-    border-radius: 4px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
+    box-sizing: border-box;
+    color: #f2f2f2;
+    text-align: left;
+    outline: 0;
+    transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
     width: 100%;
     max-height: 200px;
     overflow-y: scroll;
     scrollbar-width: none;
     display: none;
-    padding: 6px;
 }
 
 #suggestions::-webkit-scrollbar {
     display: none;
 }
 
-#suggestions div {
-    padding: 8px;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
 #suggestions div:hover {
-    background-color: #f0f0f0;
+    background-color: #454545;
+    border: 1px solid #4f4f4f;
+    box-sizing: border-box;
+    color: #f2f2f2;
+    outline: 0;
+    transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
