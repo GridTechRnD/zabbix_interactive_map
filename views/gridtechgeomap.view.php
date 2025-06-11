@@ -4,17 +4,32 @@
  * @var CView $this
  */
 
-$widget = (new CHtmlPage())->setTitle(_('Geomap'));
+$widget = (new CHtmlPage())->setTitle(_('Geomap'))->setNavigation(
+    (new CList())->addItem(
+        (new CBreadcrumbs([
+            (new CSpan())->addItem(
+                new CLink(
+                    _('All'),
+                    (new CUrl('zabbix.php'))->setArgument('action', 'availabilityreport.list')
+                )
+            ),
+            (new CSpan())->addItem(new CLink(
+                    _('Teste'),
+                    (new CUrl('zabbix.php'))->setArgument('action', 'gridtechgeomap.view')
+                ))
+        ]))->addClass('wide')
+    )
+);
 
 $widget->setControls(
     new CList([
         (new CDiv())
-                    ->addStyle('display: flex; align-items: center; gap: 12px;')
-                    ->addItem(
-                        (new CInput('text', 'search-input'))
-                            ->setId('search-input')
-                            ->setAttribute('placeholder', _('Search location...'))
-                    ),
+            ->addStyle('display: flex; align-items: center; gap: 12px;')
+            ->addItem(
+                (new CInput('text', 'search-input'))
+                    ->setId('search-input')
+                    ->setAttribute('placeholder', _('Search location...'))
+            ),
         (new CDiv())->setId('suggestions'),
         (new CDiv())
             ->addClass('menu-option')
