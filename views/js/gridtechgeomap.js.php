@@ -322,7 +322,10 @@
 
     function updateSuggestions(query) {
         suggestionsDiv.innerHTML = '';
-
+            if (query.length < 1) {
+                hideSuggestions();
+                return;
+            }
         const matches = getMatchingItems(query);
 
         if (matches.length > 0) {
