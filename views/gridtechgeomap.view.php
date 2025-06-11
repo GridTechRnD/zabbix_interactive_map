@@ -15,6 +15,7 @@ $widget->setControls(
                             ->setId('search-input')
                             ->setAttribute('placeholder', _('Search location...'))
                     ),
+        (new CDiv())->setId('suggestions'),
         (new CDiv())
             ->addClass('menu-option')
             ->addStyle('display: flex; align-items: center; gap: 12px;')
@@ -54,7 +55,7 @@ $widget->setControls(
     ])
 );
 
-$widget->addItem((new CDiv())->setId('map')->addStyle('width: 1500px;')->addStyle('height: 650px;')->addStyle('border: 1px solid #AAA;'));
+$widget->addItem((new CDiv())->setId('map'));
 $widget->addItem((new CDiv())->setId('custom-pop'));
 $widget->show();
 
