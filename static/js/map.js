@@ -11,6 +11,7 @@ const DEFAULT_ZOOM = 1;
 
 
 let map, currentTileLayer, markersCluster;
+let mapCentered = false;
 let cachedData = [];
 
 
@@ -35,7 +36,8 @@ function createClusterIcon(cluster) {
     cluster.getAllChildMarkers().forEach(marker => {
         if (marker.options.icon && marker.options.icon.options.iconUrl && marker.options.icon.options.iconUrl.includes('icon_down.png')) {
             hasDown = true;
-        }});
+        }
+    });
     let sizeClass = 'large';
     const count = cluster.getChildCount();
     if (hasDown) sizeClass = 'down';
@@ -118,7 +120,6 @@ async function loadDynamicContent(hostid) {
             fetch('/scripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json())
         ]);
 
-
         const linksContainer = document.createElement('div');
         linksContainer.innerHTML = '<h4>Links:</h4>';
         if (Array.isArray(links) && links.length) {
@@ -126,7 +127,16 @@ async function loadDynamicContent(hostid) {
                 const button = document.createElement('button');
                 button.className = 'custom-button';
                 button.textContent = link.name;
-                button.onclick = () => window.open(link.url, '_blank');
+                button.onclick = async (e) => {
+                    button.disabled = true;
+                    const original = button.innerHTML;
+                    button.innerHTML = `<span class="spinner"></span> Abrindo...`;
+                    setTimeout(() => {
+                        window.open(link.url, '_blank');
+                        button.innerHTML = original;
+                        button.disabled = false;
+                    }, 500);
+                };
                 linksContainer.appendChild(button);
             });
         } else {
@@ -134,14 +144,20 @@ async function loadDynamicContent(hostid) {
         }
         scriptsContainer.before(linksContainer);
 
-
         scriptsContainer.innerHTML = '<h4>Scripts:</h4>';
         if (Array.isArray(scripts) && scripts.length) {
             scripts.forEach(script => {
                 const button = document.createElement('button');
                 button.className = 'custom-button';
                 button.textContent = script.name;
-                button.onclick = () => executeScript(script.scriptid, hostid, script.name);
+                button.onclick = async () => {
+                    button.disabled = true;
+                    const original = button.innerHTML;
+                    button.innerHTML = `<span class="spinner"></span> Executando...`;
+                    await executeScript(script.scriptid, hostid, script.name);
+                    button.innerHTML = original;
+                    button.disabled = false;
+                };
                 scriptsContainer.appendChild(button);
             });
         } else {
@@ -162,10 +178,10 @@ async function executeScript(scriptid, hostid, scriptName) {
             body: JSON.stringify({ scriptid, hostid })
         });
         const result = await response.json();
-        showPop(`Script "${scriptName}" executed successfully. Result: ${result.value}`, 10000);
+        showPop(`Script "${scriptName}" executed successfully. Result: ${result.value}`, 10000, true);
     } catch (error) {
         console.error('Error executing script:', error);
-        showPop(`Failed to execute script "${scriptName}".`, 5000);
+        showPop(`Failed to execute script "${scriptName}".`, 5000, true);
     }
 }
 
@@ -174,7 +190,10 @@ function loadData() {
     markersCluster.clearLayers();
     const bounds = L.latLngBounds();
     const statusFilter = document.getElementById('status-filter')?.value || '';
+    const id = getIdFromUrl();
+    let focusLatLng = null;
 
+    const uniqueCoords = new Set();
     cachedData.forEach(item => {
         if (
             !item.inventory ||
@@ -188,12 +207,38 @@ function loadData() {
 
         if (statusFilter && ((statusFilter === 'Up' && item.available === '0') || (statusFilter === 'Down' && item.available === '1'))) return;
 
+        const lat = parseFloat(item.inventory.location_lat);
+        const lon = parseFloat(item.inventory.location_lon);
+        const coordKey = `${lat},${lon}`;
+
+        if (uniqueCoords.has(coordKey)) return;
+        uniqueCoords.add(coordKey);
+
         const marker = createMarker(item);
         markersCluster.addLayer(marker);
-        bounds.extend([parseFloat(item.inventory.location_lat), parseFloat(item.inventory.location_lon)]);
+        const latLng = [lat, lon];
+        bounds.extend(latLng);
+
+        if (id && item.hostid === id) {
+            focusLatLng = latLng;
+        }
     });
 
-    if (bounds.isValid()) map.fitBounds(bounds);
+    map.setMaxBounds(null);
+
+    if (bounds.isValid() && uniqueCoords.size === 1) {
+        if (!mapCentered) {
+            if (focusLatLng) {
+                map.setView(focusLatLng, 16);
+            } else {
+                map.fitBounds(bounds.pad(0.5), { padding: [50, 50] });
+            }
+            mapCentered = true;
+        }
+
+        map.setMaxBounds(bounds.pad(0.5));
+        map.options.maxBoundsViscosity = 1.0;
+    }
 }
 
 async function fetchData() {
@@ -222,7 +267,7 @@ function setupEventListeners() {
     const mapThemeFilter = document.getElementById('map-theme-filter');
     const savedThemeUrl = localStorage.getItem('mapTheme');
 
-    if (statusFilter) statusFilter.addEventListener('change', loadData);
+    if (statusFilter || statusFilter.value === "") statusFilter.addEventListener('change', loadData);
 
     if (mapThemeFilter) {
         if (savedThemeUrl) {
