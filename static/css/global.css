@@ -35,6 +35,88 @@ body {
     }
 }
 
+@media (max-width: 400px) {
+    #top-bar {
+        flex-direction: column;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 8px;
+        width: 98vw;
+        min-width: 0;
+    }
+
+    #menu {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    #search-bar {
+        width: 100%;
+        min-width: 0;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    #search-input {
+        width: 100%;
+        min-width: 0;
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    #search-button {
+        width: 100%;
+        font-size: 16px;
+        padding: 8px;
+    }
+
+    #suggestions {
+        width: 100vw;
+        left: -8px;
+        font-size: 14px;
+        max-height: 120px;
+    }
+
+    .menu-option {
+        min-width: 0;
+        width: 100%;
+        font-size: 14px;
+        padding: 6px 4px;
+    }
+
+    .menu-option.map {
+        position: static;
+        width: 100%;
+        top: auto;
+        right: auto;
+    }
+
+    .selected-option {
+        font-size: 14px;
+        padding: 6px 4px;
+        width: 100%;
+    }
+
+    #custom-pop {
+        min-width: 120px;
+        font-size: 13px;
+        padding: 10px 4px;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 95vw;
+        box-sizing: border-box;
+    }
+
+    .popup-content {
+        font-size: 13px;
+        padding: 2px;
+        max-height: 180px;
+    }
+}
+
 .custom-button {
     background-color: #353535;
     border: none;
