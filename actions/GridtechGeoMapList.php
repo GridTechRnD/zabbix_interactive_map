@@ -12,12 +12,11 @@ class GridtechGeoMapList extends CController {
     }
 
     protected function checkInput(): bool {
-        return TRUE;
+        return true;
     }
 
     protected function checkPermissions(): bool {
-        $permit_user_types = [USER_TYPE_ZABBIX_ADMIN, USER_TYPE_SUPER_ADMIN];         
-        return in_array($this->getUserType(), $permit_user_types);
+        return true;
     }
 
     protected function doAction(): void {
