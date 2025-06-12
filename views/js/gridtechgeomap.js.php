@@ -6,25 +6,29 @@
 
 ?>
 
+<?php
+$moduleBaseUrl = dirname($_SERVER['SCRIPT_NAME']) . 'modules/' . basename(dirname(__DIR__, 2));
+echo $moduleBaseUrl
+?>
+
 <script type="text/javascript">
+    const MODULE_BASE_URL = '<?= $moduleBaseUrl ?>';
     // Leaflet JS and CSS imports
-    $('head').append('<script type="text/javascript" src="modules/zabbix-module-geomap/views/Leaflet/js/leaflet.js"/>');
-    $('head').append('<script type="text/javascript" src="modules/zabbix-module-geomap/views/Leaflet/js/leaflet.markercluster.js"/>');
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/Leaflet/css/leaflet.css"/>');
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/Leaflet/css/MarkerCluster.css"/>');
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/Leaflet/css/MarkerCluster.Default.css"/>');
+    $('head').append('<script type="text/javascript" src="' + MODULE_BASE_URL + '/views/Leaflet/js/leaflet.js"/>');
+    $('head').append('<script type="text/javascript" src="' + MODULE_BASE_URL + '/views/Leaflet/js/leaflet.markercluster.js"/>');
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/Leaflet/css/leaflet.css"/>');
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/Leaflet/css/MarkerCluster.css"/>');
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/Leaflet/css/MarkerCluster.Default.css"/>');
 
     //All JS and CSS import
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/css/marker.css"/>');
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/css/menu.css"/>');
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/css/search.css"/>');
-    $('head').append('<link rel="stylesheet" type="text/css" href="modules/zabbix-module-geomap/views/css/global.css"/>');
-
-
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/css/marker.css"/>');
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/css/menu.css"/>');
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/css/search.css"/>');
+    $('head').append('<link rel="stylesheet" type="text/css" href="' + MODULE_BASE_URL + '/views/css/global.css"/>');
 
     const ICONS = {
-        UP: L.icon({ iconUrl: 'modules/zabbix-module-geomap/views/images/icon_up.png', iconSize: [38, 38] }),
-        DOWN: L.icon({ iconUrl: 'modules/zabbix-module-geomap/views/images/icon_down.png', iconSize: [38, 38] })
+        UP: L.icon({ iconUrl: MODULE_BASE_URL + '/views/images/icon_up.png', iconSize: [38, 38] }),
+        DOWN: L.icon({ iconUrl: MODULE_BASE_URL + '/views/images/icon_down.png', iconSize: [38, 38] })
     };
 
     const DEFAULT_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -80,7 +84,7 @@
     <div class="marker-box">
       <div class="marker-item alias"><b>${item.host || 'N/A'}</b></div>
       <div class="marker-item image">
-        <img src="${item.available === "0" ? 'modules/zabbix-module-geomap/views/images/icon_down.png' : 'modules/zabbix-module-geomap/views/images/icon_up.png'}" style="width: 38px; height: 38px;">
+        <img src="${item.available === "0" ? MODULE_BASE_URL + '/views/images/icon_down.png' : MODULE_BASE_URL + '/views/images/icon_up.png'}" style="width: 38px; height: 38px;">
       </div>
       <div class="marker-item grouped">
         <div><b>${item.name || 'N/A'}</b></div>
