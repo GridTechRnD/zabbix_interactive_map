@@ -6,6 +6,7 @@
     "type": "module",
     "namespace": "GridtechGeoMap",
     "author": "Gustavo Zeloni",
+    "url": "https://github.com/GridTechRnD/zabbix_interactive_map/tree/zabbix_module",
     "description": "Displays an interactive geographic map highlighting hosts and clusters for better visualization and management.",
     "actions": {
         "gridtechgeomaplist.view": {
