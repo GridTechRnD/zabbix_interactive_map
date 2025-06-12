@@ -3,7 +3,6 @@
 namespace Modules\GridtechGeoMap\Actions;
 
 use CController;
-use CControllerResponseData;
 use API;
 
 class ExecuteScript extends CController
