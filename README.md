@@ -18,7 +18,7 @@ The module will appear in the modules list, disabled by default.
 Enable the module and look for "Geomaps" in the "Monitoring" tab.
 
 ## Usage
-This module uses the Zabbix API::Map(). The network maps created in the "Maps" section will be shown here.
+This module uses the Zabbix API::Map(). The network maps created in the "Maps" section will also be shown in the new "Geomaps" tab.
 Hosts need to have latitude and longitude in their inventory.
 
 The wrapping implementation is designed to redirect the maps from the original "Maps" tab to this new "Geomaps" tab.
