@@ -7,7 +7,7 @@ const ICONS = {
 const DEFAULT_TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_OPTIONS = { zoomControl: false };
 const DEFAULT_VIEW = [0, 0];
-const DEFAULT_ZOOM = 1;
+const DEFAULT_ZOOM = 13;
 
 
 let map, currentTileLayer, markersCluster;
@@ -82,26 +82,63 @@ function createMarker(item) {
     });
 
     const marker = L.marker([lat, lon], { icon: customIcon });
-    marker.bindPopup(createPopup(item, [lat, lon]));
+    marker.bindPopup(createPopup(item, [lat, lon]), { minWidth: 166, maxWidth: 250, minHeight: 300, maxHeight: 836 });
     return marker;
 }
 
 
 function createPopup(item, latLng) {
     const popContent = `
-    <div class="popup-content">
-      <b>Details</b><br>
-      Name: <b>${item.name || 'N/A'}</b><br>
-      Host: <b>${item.host || 'N/A'}</b><br>
-      IP: <b>${item.interfaces[0].ip || 'N/A'}</b><br>
-      Serial Number: <b>${item.inventory.serialno_a || 'N/A'}</b><br>
-      Type: <b>${item.inventory.type || 'N/A'}</b><br>
-      Type (Full Details): <b>${item.inventory.type_full || 'N/A'}</b><br>
-      Location: <b>${item.inventory.location || 'N/A'}</b><br>
-      Latitude: <b>${latLng[0]}</b><br>
-      Longitude: <b>${latLng[1]}</b><br>
-      <div id="scripts-container-${item.hostid}">Loading scripts...</div>
-    </div>
+    <ul class="popup-content" tabindex="0">
+            <li>
+                <h3>View</h3>
+            </li>
+            <li><a tabindex="-1" aria-label="View, Dashboards" class="popup-content-item"
+                href="zabbix.php?action=host.dashboard.view&amp;hostid=${item.hostid}">Dashboards</a></li>
+            <li><a tabindex="-1" aria-label="View, Problems" class="popup-content-item"
+                    href="zabbix.php?action=problem.view&amp;hostids%5B%5D=${item.hostid}&amp;filter_set=1">Problems</a></li>
+            <li><a tabindex="-1" aria-label="View, Latest data" class="popup-content-item"
+                    href="zabbix.php?action=latest.view&amp;hostids%5B%5D=${item.hostid}&amp;filter_set=1">Latest data</a></li>
+            <li><a tabindex="-1" aria-label="View, Graphs" class="popup-content-item"
+                    href="zabbix.php?action=charts.view&amp;filter_hostids%5B%5D=${item.hostid}&amp;filter_set=1">Graphs</a></li>
+            <li><a tabindex="-1" aria-label="View, Inventory" class="popup-content-item"
+                    href="hostinventories.php?hostid=${item.hostid}">Inventory</a></li>
+            <li>
+                <div></div>
+            </li>
+            <li>
+                <h3>Configuration</h3>
+            </li>
+            <li><a tabindex="-1" aria-label="Configuration, Host" class="popup-content-item"
+                href="zabbix.php?action=host.edit&amp;hostid=${item.hostid}">Host</a></li>
+            <li><a tabindex="-1" aria-label="Configuration, Items" class="popup-content-item"
+                    href="zabbix.php?action=item.list&amp;filter_set=1&amp;filter_hostids%5B%5D=${item.hostid}&amp;context=host">Items</a>
+            </li>
+            <li><a tabindex="-1" aria-label="Configuration, Triggers" class="popup-content-item"
+                    href="zabbix.php?action=trigger.list&amp;filter_set=1&amp;filter_hostids%5B%5D=${item.hostid}&amp;context=host">Triggers</a>
+            </li>
+            <li><a tabindex="-1" aria-label="Configuration, Graphs" class="popup-content-item"
+                    href="graphs.php?filter_set=1&amp;filter_hostids%5B%5D=${item.hostid}&amp;context=host">Graphs</a></li>
+            <li>
+                <div></div>
+            </li>
+            <li>
+                <h3>Scripts</h3>
+            </li>
+            <!-- marcador para scripts -->
+            <li id="scripts-placeholder-${item.hostid}"></li>
+            <li>
+                <div></div>
+            </li>
+            <li>
+                <h3>Links</h3>
+            </li>
+            <!-- marcador para links -->
+            <li id="links-placeholder-${item.hostid}"></li>
+            <li>
+                <div></div>
+            </li>
+        </ul>
   `;
 
     const popup = L.popup({ closeButton: true }).setContent(popContent);
@@ -111,61 +148,101 @@ function createPopup(item, latLng) {
 
 
 async function loadDynamicContent(hostid) {
-    const scriptsContainer = document.getElementById(`scripts-container-${hostid}`);
-    if (!scriptsContainer) return;
+    const scriptsPlaceholder = document.getElementById(`scripts-placeholder-${hostid}`);
+    const linksPlaceholder = document.getElementById(`links-placeholder-${hostid}`);
 
     try {
+        // Fetch links and scripts data concurrently
         const [links, scripts] = await Promise.all([
-            fetch('/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json()),
-            fetch('/scripts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostid }) }).then(res => res.json())
+            fetch('/links', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostid })
+            }).then(res => res.json()),
+            fetch('/scripts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostid })
+            }).then(res => res.json())
         ]);
 
-        const linksContainer = document.createElement('div');
-        linksContainer.innerHTML = '<h4>Links:</h4>';
-        if (Array.isArray(links) && links.length) {
-            links.forEach(link => {
-                const button = document.createElement('button');
-                button.className = 'custom-button';
-                button.textContent = link.name;
-                button.onclick = async (e) => {
-                    button.disabled = true;
-                    const original = button.innerHTML;
-                    button.innerHTML = `<span class="spinner"></span> Abrindo...`;
-                    setTimeout(() => {
-                        window.open(link.url, '_blank');
-                        button.innerHTML = original;
-                        button.disabled = false;
-                    }, 500);
-                };
-                linksContainer.appendChild(button);
-            });
-        } else {
-            linksContainer.textContent = 'No links available.';
-        }
-        scriptsContainer.before(linksContainer);
+        // Handle Scripts
+        if (scriptsPlaceholder) {
+            // Remove existing <li> elements after the placeholder
+            let next = scriptsPlaceholder.nextSibling;
+            while (next && next.tagName === 'LI' && !next.querySelector('h3')) {
+                const toRemove = next;
+                next = next.nextSibling;
+                toRemove.remove();
+            }
 
-        scriptsContainer.innerHTML = '<h4>Scripts:</h4>';
-        if (Array.isArray(scripts) && scripts.length) {
-            scripts.forEach(script => {
-                const button = document.createElement('button');
-                button.className = 'custom-button';
-                button.textContent = script.name;
-                button.onclick = async () => {
-                    button.disabled = true;
-                    const original = button.innerHTML;
-                    button.innerHTML = `<span class="spinner"></span> Executando...`;
-                    await executeScript(script.scriptid, hostid, script.name);
-                    button.innerHTML = original;
-                    button.disabled = false;
-                };
-                scriptsContainer.appendChild(button);
-            });
-        } else {
-            scriptsContainer.textContent = 'No scripts available.';
+            if (Array.isArray(scripts) && scripts.length) {
+                scripts.forEach(script => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'popup-content-item';
+                    a.tabIndex = -1;
+                    a.textContent = script.name;
+                    a.onclick = async (e) => {
+                        e.preventDefault();
+                        a.textContent = 'Executando...';
+                        a.classList.add('disabled');
+                        await executeScript(script.scriptid, hostid, script.name);
+                        a.textContent = script.name;
+                        a.classList.remove('disabled');
+                    };
+                    li.appendChild(a);
+                    scriptsPlaceholder.parentNode.insertBefore(li, scriptsPlaceholder.nextSibling);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerHTML = '<span style="color:#888">No scripts available.</span>';
+                scriptsPlaceholder.parentNode.insertBefore(li, scriptsPlaceholder.nextSibling);
+            }
+        }
+
+        // Handle Links
+        if (linksPlaceholder) {
+            // Remove existing <li> elements after the placeholder
+            let next = linksPlaceholder.nextSibling;
+            while (next && next.tagName === 'LI' && !next.querySelector('h3')) {
+                const toRemove = next;
+                next = next.nextSibling;
+                toRemove.remove();
+            }
+
+            if (Array.isArray(links) && links.length) {
+                links.forEach(link => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'popup-content-item';
+                    a.tabIndex = -1;
+                    a.textContent = link.name;
+                    a.href = link.url;
+                    a.target = '_blank';
+                    li.appendChild(a);
+                    linksPlaceholder.parentNode.insertBefore(li, linksPlaceholder.nextSibling);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerHTML = '<span style="color:#888">No links available.</span>';
+                linksPlaceholder.parentNode.insertBefore(li, linksPlaceholder.nextSibling);
+            }
         }
     } catch (error) {
         console.error('Error loading dynamic content:', error);
-        scriptsContainer.textContent = 'Failed to load content.';
+        // Display error message for scripts
+        if (scriptsPlaceholder) {
+            const li = document.createElement('li');
+            li.innerHTML = '<span style="color:#888">Failed to load scripts.</span>';
+            scriptsPlaceholder.parentNode.insertBefore(li, scriptsPlaceholder.nextSibling);
+        }
+        // Display error message for links
+        if (linksPlaceholder) {
+            const li = document.createElement('li');
+            li.innerHTML = '<span style="color:#888">Failed to load links.</span>';
+            linksPlaceholder.parentNode.insertBefore(li, linksPlaceholder.nextSibling);
+        }
     }
 }
 
@@ -227,16 +304,23 @@ function loadData() {
     map.setMaxBounds(null);
 
     if (bounds.isValid()) {
+        const southWest = bounds.getSouthWest();
+        const northEast = bounds.getNorthEast();
+        const expandedBounds = L.latLngBounds(
+            [southWest.lat - 0.1, southWest.lng - 0.1],
+            [northEast.lat + 0.1, northEast.lng + 0.1]
+        );
+
         if (!mapCentered) {
             if (focusLatLng) {
                 map.setView(focusLatLng, 16);
             } else {
-                map.fitBounds(bounds.pad(0.5), { padding: [50, 50] });
+                map.fitBounds(expandedBounds, { padding: [50, 50] });
             }
             mapCentered = true;
         }
 
-        map.setMaxBounds(bounds.pad(0.5));
+        map.setMaxBounds(expandedBounds);
         map.options.maxBoundsViscosity = 1.0;
         map.setMinZoom(13);
     }
@@ -257,7 +341,6 @@ async function fetchData() {
         console.error('Error fetching data:', error);
     }
 }
-
 function getIdFromUrl() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id');
