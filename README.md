@@ -1,30 +1,27 @@
-# zabbix-module-geomap
-
-## Introduction
-This module is compatible Zabbix 6 and Zabbix 5.</br>
-The goal of this module is to provide an interactive geographical map with hosts which have coordinates. There is four possibles to interactive with this map:
-* Search one host with search bar
-* Search all hosts in one or many severity with filter button
-* Highlight one department in map and get all hosts only in this department
-* Highlight one region in map and get all hosts only in this region
-
+# Zabbix Geomap
 
 ## Installation
-How to install :
-* Go to your zabbix frontend installation (default: /usr/share/zabbix/modules)
-* Clone the project : git clone [https://github.com/YPSI-SAS/zabbix-module-geomap.git](https://github.com/YPSI-SAS/zabbix-module-geomap.git)
-* Change the owner of directory to your web user if necessary
-* Go to your web Zabbix interface in : Administration > General > Modules
-* Use the Scan directory button on the top right
-* Enable the module
-* Go to Monitoring > Geomap
+This module is designed for use with Zabbix Docker installations and wraps the original Zabbix Sysmap List.
+Installation is simple: you just need to add two volumes to the `docker-compose` file for the `zabbix-frontend` service.
 
-## Add new country and filter
-You can add a new country and a new filter for this country simply. For my example, I choose to explain how create a new filter for country **Italie** and filter **department** </br>
-To create a new country:
-* Create a new directory named **Italie** in zabbix-module-geomap/resources
+```docker-compose
+zabbix-frontend:
+    ...
+    volumes:
+        - ./THIS_ENTIRE_FOLDER:/usr/share/zabbix/modules/zabbix-module-geomap
+        - ./monitoring.sysmap.list.php:/usr/share/zabbix/include/views/monitoring.sysmap.list.php
+```
 
-To create a new filters like department or region or other for exemple:
-* Create a new directory named **department** in zabbix-module-geomap/resources/Italie
+In Zabbix, go to **Administration > General > Modules**, then click the "Scan Directory" button.
+The module will appear in the modules list, disabled by default.
+Enable the module and look for "Geomaps" in the "Monitoring" tab.
 
-And you must add all GeoJson files in this directory. The name of GeoJson file will be the name which appears in possible option in the filter.
+## Usage
+This module uses the Zabbix API::Map(). The network maps created in the "Maps" section will be shown here.
+Hosts need to have latitude and longitude in their inventory.
+
+The wrapping implementation is designed to redirect the maps from the original "Maps" tab to this new "Geomaps" tab.
+The maps you want to redirect to "Geomaps" need to have the "Host label type" property enabled as a "Custom label" with the string "4G".
+If you want to enable more redirect types, edit **`monitoring.sysmap.list.php`** on line 105:
+The current condition is hardcoded to look for "4G" in the "Host label type" property, but you can change it as you wish.
+Change the line `if (array_key_exists('label_string_host', $label) && $label['label_string_host'] === '4G')` and reload Zabbix.
