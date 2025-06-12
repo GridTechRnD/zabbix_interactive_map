@@ -8,7 +8,6 @@
 
 <?php
 $moduleBaseUrl = dirname($_SERVER['SCRIPT_NAME']) . 'modules/' . basename(dirname(__DIR__, 2));
-echo $moduleBaseUrl
 ?>
 
 <script type="text/javascript">
