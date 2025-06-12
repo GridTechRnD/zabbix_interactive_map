@@ -9,8 +9,8 @@ Installation is simple: you just need to add two volumes to the `docker-compose`
 zabbix-frontend:
     ...
     volumes:
-        - ./:/usr/share/zabbix/modules/zabbix-module-geomap
-        - ./monitoring.sysmap.list.php:/usr/share/zabbix/include/views/monitoring.sysmap.list.php
+        - ./zabbix_interactive_map:/usr/share/zabbix/modules/zabbix_interactive_map
+        - ./zabbix_interactive_map/monitoring.sysmap.list.php:/usr/share/zabbix/include/views/monitoring.sysmap.list.php
 ```
 
 In Zabbix, go to **Administration > General > Modules**, then click the "Scan Directory" button.
