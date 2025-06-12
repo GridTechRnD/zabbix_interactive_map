@@ -56,7 +56,6 @@ class GridtechGeoMapHosts extends CController
 		if (!empty($hostids)) {
 			$hosts = API::Host()->get([
 				'hostids' => $hostids,
-				// 'groupids' => [321],
 				'output' => ['extend', 'host', 'name'],
 				'selectInventory' => [
 					'type',
@@ -67,10 +66,6 @@ class GridtechGeoMapHosts extends CController
 					'serialno_a'
 				],
 				'selectInterfaces' => ['ip'],
-				// 'filter' => [
-				// 	'status' => '0',
-				// 	'inventory.type' => 'AP'
-				// ]
 			]);
 
 			$items = API::Item()->get([
