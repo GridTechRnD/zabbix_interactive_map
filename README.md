@@ -5,11 +5,11 @@
 This module is designed for use with Zabbix Docker installations and wraps the original Zabbix Sysmap List.
 Installation is simple: you just need to add two volumes to the `docker-compose` file for the `zabbix-frontend` service.
 
-```docker-compose
+```yaml
 zabbix-frontend:
     ...
     volumes:
-        - ./THIS_ENTIRE_FOLDER:/usr/share/zabbix/modules/zabbix-module-geomap
+        - ./:/usr/share/zabbix/modules/zabbix-module-geomap
         - ./monitoring.sysmap.list.php:/usr/share/zabbix/include/views/monitoring.sysmap.list.php
 ```
 
