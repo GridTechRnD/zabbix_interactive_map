@@ -1,4 +1,5 @@
 # Zabbix Geomap
+***Designed for Zabbix 7.0.13 version***
 
 ## Installation
 This module is designed for use with Zabbix Docker installations and wraps the original Zabbix Sysmap List.
