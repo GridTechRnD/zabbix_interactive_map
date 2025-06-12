@@ -5,18 +5,25 @@
 }
 
 .menu-option {
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
+    box-sizing: border-box;
+    color: #f2f2f2;
+    padding: 4px 10px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 12px;
     display: flex;
     top: 100%;
     align-items: center;
-    background: #fff;
-    border-radius: 4px;
-    border: none;
-    padding: 8px 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     position: relative;
     min-width: 40px;
     min-height: 40px;
-    justify-content: center;
+}
+
+.menu-option:hover {
+    background-color: #454545;
 }
 
 .menu-option.map {
@@ -30,7 +37,13 @@
     font-size: 16px;
     pointer-events: none;
 }
+
 .menu-option select {
+    display: block;
+    background-color: #383838;
+    border: 1px solid #4f4f4f;
+    box-sizing: border-box;
+    color: #f2f2f2;
     position: absolute;
     text-align: center;
     top: 0;
@@ -39,50 +52,33 @@
     height: 100%;
     opacity: 0;
     cursor: pointer;
-    border: none;
-    border-radius: 4px;
     box-shadow: none;
     outline: none;
-    background: transparent;
     z-index: 2;
-}
-
-.menu-option select:focus+.menu-icon {
-    outline: 2px solid #04AA6D;
-    border: none;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-}
-
-.menu-option select {
-    color: black;
-    font-size: 16px;
-    background: transparent;
-    text-indent: 100%;
-    white-space: inherit;
-    overflow: hidden;
-    border: none;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    border-radius: 0 !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .menu-text {
     margin: 8px;
     font-size: 16px;
-    color: #333;
+    color: #f2f2f2;
     pointer-events: none;
 }
 
 .selected-option {
+    background-color: #454545;
+    color: #f2f2f2;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    background: #f8f9fa;
-    border-radius: 4px;
     padding: 8px 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     gap: 8px;
     font-size: 16px;
-    color: #333;
+    color: #f2f2f2;
 }
 
 .selected-option .remove-button {
