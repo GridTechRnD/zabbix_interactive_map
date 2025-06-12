@@ -238,6 +238,7 @@ function loadData() {
 
         map.setMaxBounds(bounds.pad(0.5));
         map.options.maxBoundsViscosity = 1.0;
+        map.setMinZoom(13);
     }
 }
 
