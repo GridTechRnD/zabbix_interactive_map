@@ -8,7 +8,7 @@ if not all(getenv(var) for var in ["ZBX_HOST", "ZBX_USER", "ZBX_PASSWORD"]):
 import asyncio
 import contextlib
 # FastAPI imports
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -67,7 +67,9 @@ async def favicon():
 # This endpoint reads the index.html file from the static directory
 # and returns it as an HTML response
 @app.get("/")
-async def home():
+async def home(id: str | int = Query(default=None)):
+    if id is None:
+        raise HTTPException(status_code=404, detail="Not Found")
     with open("static/index.html") as file:
         leaflet_map = file.read()
     return HTMLResponse(leaflet_map)
