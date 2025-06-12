@@ -3,7 +3,7 @@
 
 ## Installation
 This module is designed for use with Zabbix Docker installations and wraps the original Zabbix Sysmap List.
-Installation is simple: you just need to add two volumes to the `docker-compose` file for the `zabbix-frontend` service.
+Installation is simple: you just need to add this repository to the root folder of your Zabbix Docker installation and add two volumes to the `docker-compose` file for the `zabbix-frontend` service.
 
 ```yaml
 zabbix-frontend:
