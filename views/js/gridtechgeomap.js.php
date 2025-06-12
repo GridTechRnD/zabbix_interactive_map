@@ -308,16 +308,23 @@ $moduleBaseUrl = dirname($_SERVER['SCRIPT_NAME']) . 'modules/' . basename(dirnam
         map.setMaxBounds(null);
 
         if (bounds.isValid()) {
+            const southWest = bounds.getSouthWest();
+            const northEast = bounds.getNorthEast();
+            const expandedBounds = L.latLngBounds(
+                [southWest.lat - 0.1, southWest.lng - 0.1],
+                [northEast.lat + 0.1, northEast.lng + 0.1]
+            );
+
             if (!mapCentered) {
                 if (focusLatLng) {
                     map.setView(focusLatLng, 16);
                 } else {
-                    map.fitBounds(bounds.pad(0.5), { padding: [50, 50] });
+                    map.fitBounds(expandedBounds, { padding: [50, 50] });
                 }
                 mapCentered = true;
             }
 
-            map.setMaxBounds(bounds.pad(0.5));
+            map.setMaxBounds(expandedBounds);
             map.options.maxBoundsViscosity = 1.0;
             map.setMinZoom(13);
         }
