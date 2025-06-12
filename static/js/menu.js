@@ -23,7 +23,9 @@ document.addEventListener("DOMContentLoaded", () => {
             removeButton.addEventListener("click", () => {
                 selectedOptionDiv.remove();
                 statusFilter.value = "";
+                loadData();
             });
+
 
             const optionText = document.createElement("span");
             optionText.textContent = selectedText;
