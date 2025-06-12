@@ -307,7 +307,7 @@ $moduleBaseUrl = dirname($_SERVER['SCRIPT_NAME']) . 'modules/' . basename(dirnam
 
         map.setMaxBounds(null);
 
-        if (bounds.isValid() && uniqueCoords.size === 1) {
+        if (bounds.isValid()) {
             if (!mapCentered) {
                 if (focusLatLng) {
                     map.setView(focusLatLng, 16);
