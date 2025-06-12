@@ -18,10 +18,10 @@ function createSuggestionsDiv() {
 function updateSuggestions(query) {
     suggestionsDiv.innerHTML = '';
 
-    if (query.length < 3) {
-        hideSuggestions();
-        return;
-    }
+    // if (query.length < 2) {
+    //     hideSuggestions();
+    //     return;
+    // }
 
     const matches = getMatchingItems(query);
 
@@ -104,16 +104,34 @@ function hideSuggestions() {
 }
 
 
-function showPop(message, timeout = 3000) {
+function showPop(message, timeout = 3000, hasCloseButton = false) {
     const popup = document.getElementById('custom-pop');
     if (popup) {
         popup.textContent = message;
         popup.classList.remove('hidden');
         popup.classList.add('show');
-        setTimeout(() => {
-            popup.classList.remove('show');
-            popup.classList.add('hidden');
-        }, timeout);
+
+        if (hasCloseButton) {
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'x';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '5px';
+            closeButton.style.right = '10px';
+            closeButton.style.background = 'transparent';
+            closeButton.style.border = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.addEventListener('click', () => {
+                popup.classList.remove('show');
+                popup.classList.add('hidden');
+            });
+            popup.appendChild(closeButton);
+        } else {
+            setTimeout(() => {
+                popup.classList.remove('show');
+                popup.classList.add('hidden');
+            }, timeout);
+        }
     }
 }
 
