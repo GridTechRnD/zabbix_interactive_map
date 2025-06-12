@@ -105,7 +105,7 @@
         });
 
         const marker = L.marker([lat, lon], { icon: customIcon });
-        marker.bindPopup(createPopup(item, [lat, lon]));
+        marker.bindPopup(createPopup(item, [lat, lon]), {minWidth: 166, maxWidth: 250, minHeight: 300, maxHeight: 836});
         return marker;
     }
 
