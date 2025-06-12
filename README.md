@@ -22,6 +22,9 @@ Hosts need to have latitude and longitude in their inventory.
 
 The wrapping implementation is designed to redirect the maps from the original "Maps" tab to this new "Geomaps" tab.
 The maps you want to redirect to "Geomaps" need to have the "Host label type" property enabled as a "Custom label" with the string "4G".
+
 If you want to enable more redirect types, edit **`monitoring.sysmap.list.php`** on line 105:
+
 The current condition is hardcoded to look for "4G" in the "Host label type" property, but you can change it as you wish.
+
 Change the line `if (array_key_exists('label_string_host', $label) && $label['label_string_host'] === '4G')` and reload Zabbix.
