@@ -23,6 +23,7 @@ async def data(id: str = Query(None), zapi: ZabbixAPI = Depends(zabbix_session))
     ]
     if res := zapi.host.get({
         "hostids": hostids,
+        "groupids": [321],
         "output": ["extend", "host", "name"],
         "selectInventory": [
             "type",
