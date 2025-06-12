@@ -108,7 +108,7 @@ $moduleBaseUrl = dirname($_SERVER['SCRIPT_NAME']) . 'modules/' . basename(dirnam
         });
 
         const marker = L.marker([lat, lon], { icon: customIcon });
-        marker.bindPopup(createPopup(item, [lat, lon]), {minWidth: 166, maxWidth: 250, minHeight: 300, maxHeight: 836});
+        marker.bindPopup(createPopup(item, [lat, lon]), { minWidth: 166, maxWidth: 250, minHeight: 300, maxHeight: 836 });
         return marker;
     }
 
@@ -305,13 +305,20 @@ $moduleBaseUrl = dirname($_SERVER['SCRIPT_NAME']) . 'modules/' . basename(dirnam
             }
         });
 
-        if (!mapCentered) {
-            if (focusLatLng) {
-                map.setView(focusLatLng, 16);
-            } else if (bounds.isValid()) {
-                map.fitBounds(bounds);
+        map.setMaxBounds(null);
+
+        if (bounds.isValid() && uniqueCoords.size === 1) {
+            if (!mapCentered) {
+                if (focusLatLng) {
+                    map.setView(focusLatLng, 16);
+                } else {
+                    map.fitBounds(bounds.pad(0.5), { padding: [50, 50] });
+                }
+                mapCentered = true;
             }
-            mapCentered = true;
+
+            map.setMaxBounds(bounds.pad(0.5));
+            map.options.maxBoundsViscosity = 1.0;
         }
     }
 
